@@ -36,26 +36,8 @@ nano-banana-mcp
    - Create a new API key
    - Copy it for configuration
 
-2. **Configure the MCP server** (choose one method):
-
-   **Method A: In MCP Configuration (Recommended - Most Secure)**
-   ```json
-   // In your claude_desktop_config.json or similar
-   "env": {
-     "GEMINI_API_KEY": "your-gemini-api-key-here"
-   }
-   ```
-
-   **Method B: System Environment Variable**
-   ```bash
-   export GEMINI_API_KEY="your-api-key-here"
-   ```
-
-   **Method C: Using the configure tool**
-   ```bash
-   # The server will prompt you to configure when first used
-   # This creates a local .nano-banana-config.json file
-   ```
+2. **Configure the MCP server**:
+   See configuration examples for your specific client below (Claude Code, Cursor, or other MCP clients).
 
 ## 💻 Usage with Claude Code
 
@@ -146,6 +128,38 @@ nano-banana-mcp
    - Ask Cursor to generate images for your app
    - Create mockups and prototypes
    - Generate assets for your projects
+
+## 🔧 For Other MCP Clients
+
+If you're using a different MCP client, you can configure nano-banana-mcp using any of these methods:
+
+### Configuration Methods
+
+**Method A: Environment Variable in MCP Config (Recommended)**
+```json
+{
+  "nano-banana": {
+    "command": "npx",
+    "args": ["nano-banana-mcp"],
+    "env": {
+      "GEMINI_API_KEY": "your-gemini-api-key-here"
+    }
+  }
+}
+```
+
+**Method B: System Environment Variable**
+```bash
+export GEMINI_API_KEY="your-gemini-api-key-here"
+npx nano-banana-mcp
+```
+
+**Method C: Using the Configure Tool**
+```bash
+npx nano-banana-mcp
+# The server will prompt you to configure when first used
+# This creates a local .nano-banana-config.json file
+```
 
 ## 🛠️ Available Commands
 
