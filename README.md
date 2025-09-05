@@ -14,21 +14,6 @@ A Model Context Protocol (MCP) server that provides AI image generation and edit
 - 🔧 **Easy Setup**: Simple configuration with API key
 - 📁 **Auto File Management**: Automatic image saving with organized naming
 
-## 🚀 Quick Start
-
-### Option 1: Using npx (Recommended)
-
-```bash
-npx nano-banana-mcp
-```
-
-### Option 2: Global Installation
-
-```bash
-npm install -g nano-banana-mcp
-nano-banana-mcp
-```
-
 ## 🔑 Setup
 
 1. **Get your Gemini API key**:
@@ -41,93 +26,83 @@ nano-banana-mcp
 
 ## 💻 Usage with Claude Code
 
-### In Claude Code:
+### Configuration:
 
-1. **Install and run the MCP server**:
-   ```bash
-   npx nano-banana-mcp
-   ```
+Add this to your Claude Code MCP settings:
 
-2. **Add to your Claude Code configuration**:
-   Add this to your Claude Code MCP settings:
-   
-   **Option A: With environment variable (Recommended - Most Secure)**
-   ```json
-   {
-     "mcpServers": {
-       "nano-banana": {
-         "command": "npx",
-         "args": ["nano-banana-mcp"],
-         "env": {
-           "GEMINI_API_KEY": "your-gemini-api-key-here"
-         }
-       }
-     }
-   }
-   ```
-   
-   **Option B: Without environment variable**
-   ```json
-   {
-     "mcpServers": {
-       "nano-banana": {
-         "command": "npx",
-         "args": ["nano-banana-mcp"]
-       }
-     }
-   }
-   ```
+**Option A: With environment variable (Recommended - Most Secure)**
+```json
+{
+  "mcpServers": {
+    "nano-banana": {
+      "command": "npx",
+      "args": ["nano-banana-mcp"],
+      "env": {
+        "GEMINI_API_KEY": "your-gemini-api-key-here"
+      }
+    }
+  }
+}
+```
 
-3. **Start generating images**:
-   ```
-   Generate an image of a sunset over mountains
-   ```
+**Option B: Without environment variable**
+```json
+{
+  "mcpServers": {
+    "nano-banana": {
+      "command": "npx",
+      "args": ["nano-banana-mcp"]
+    }
+  }
+}
+```
 
-   ```
-   Edit this image to add some birds in the sky
-   ```
+### Usage Examples:
+```
+Generate an image of a sunset over mountains
+```
 
-   ```
-   Continue editing to make it more dramatic
-   ```
+```
+Edit this image to add some birds in the sky
+```
+
+```
+Continue editing to make it more dramatic
+```
 
 ## 🎯 Usage with Cursor
 
-### Setup in Cursor:
+### Configuration:
 
-1. **Install the MCP server**:
-   ```bash
-   npm install -g nano-banana-mcp
-   ```
+Add to your Cursor MCP configuration:
 
-2. **Configure in Cursor settings**:
-   Add to your Cursor MCP configuration:
-   
-   **Option A: With environment variable (Recommended)**
-   ```json
-   {
-     "nano-banana": {
-       "command": "nano-banana-mcp",
-       "env": {
-         "GEMINI_API_KEY": "your-gemini-api-key-here"
-       }
-     }
-   }
-   ```
-   
-   **Option B: Without environment variable**
-   ```json
-   {
-     "nano-banana": {
-       "command": "nano-banana-mcp"
-     }
-   }
-   ```
+**Option A: With environment variable (Recommended)**
+```json
+{
+  "nano-banana": {
+    "command": "npx",
+    "args": ["nano-banana-mcp"],
+    "env": {
+      "GEMINI_API_KEY": "your-gemini-api-key-here"
+    }
+  }
+}
+```
 
-3. **Use in your projects**:
-   - Ask Cursor to generate images for your app
-   - Create mockups and prototypes
-   - Generate assets for your projects
+**Option B: Without environment variable**
+```json
+{
+  "nano-banana": {
+    "command": "npx",
+    "args": ["nano-banana-mcp"]
+  }
+}
+```
+
+### Usage Examples:
+- Ask Cursor to generate images for your app
+- Create mockups and prototypes  
+- Generate assets for your projects
 
 ## 🔧 For Other MCP Clients
 
