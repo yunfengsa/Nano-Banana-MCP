@@ -242,6 +242,24 @@ class NanoBananaMCP {
         contents: prompt,
       });
       
+      // Validate response completeness
+      if (!response.candidates || response.candidates.length === 0) {
+        throw new McpError(ErrorCode.InternalError, "No candidates in response from Gemini API");
+      }
+      
+      const candidate = response.candidates[0];
+      if (!candidate.finishReason) {
+        throw new McpError(ErrorCode.InternalError, "Response missing finish reason - generation may have been interrupted");
+      }
+      
+      // Check if generation was successful
+      if (candidate.finishReason !== "STOP" && candidate.finishReason !== "MAX_TOKENS") {
+        throw new McpError(
+          ErrorCode.InternalError, 
+          `Generation failed with finish reason: ${candidate.finishReason}`
+        );
+      }
+      
       // Process response to extract image data
       const content: any[] = [];
       const savedFiles: string[] = [];
@@ -253,8 +271,8 @@ class NanoBananaMCP {
       // Create directory
       await fs.mkdir(imagesDir, { recursive: true, mode: 0o755 });
       
-      if (response.candidates && response.candidates[0]?.content?.parts) {
-        for (const part of response.candidates[0].content.parts) {
+      if (candidate?.content?.parts) {
+        for (const part of candidate.content.parts) {
           // Process text content
           if (part.text) {
             textContent += part.text;
@@ -379,6 +397,24 @@ class NanoBananaMCP {
         ],
       });
       
+      // Validate response completeness
+      if (!response.candidates || response.candidates.length === 0) {
+        throw new McpError(ErrorCode.InternalError, "No candidates in response from Gemini API");
+      }
+      
+      const candidate = response.candidates[0];
+      if (!candidate.finishReason) {
+        throw new McpError(ErrorCode.InternalError, "Response missing finish reason - generation may have been interrupted");
+      }
+      
+      // Check if generation was successful
+      if (candidate.finishReason !== "STOP" && candidate.finishReason !== "MAX_TOKENS") {
+        throw new McpError(
+          ErrorCode.InternalError, 
+          `Generation failed with finish reason: ${candidate.finishReason}`
+        );
+      }
+      
       // Process response
       const content: any[] = [];
       const savedFiles: string[] = [];
@@ -389,8 +425,8 @@ class NanoBananaMCP {
       await fs.mkdir(imagesDir, { recursive: true, mode: 0o755 });
       
       // Extract image from response
-      if (response.candidates && response.candidates[0]?.content?.parts) {
-        for (const part of response.candidates[0].content.parts) {
+      if (candidate?.content?.parts) {
+        for (const part of candidate.content.parts) {
           if (part.text) {
             textContent += part.text;
           }
