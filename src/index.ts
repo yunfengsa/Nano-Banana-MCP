@@ -242,6 +242,24 @@ class NanoBananaMCP {
         contents: prompt,
       });
       
+      // Validate response completeness
+      if (!response.candidates || response.candidates.length === 0) {
+        throw new McpError(ErrorCode.InternalError, "No candidates in response from Gemini API");
+      }
+      
+      const candidate = response.candidates[0];
+      if (!candidate.finishReason) {
+        throw new McpError(ErrorCode.InternalError, "Response missing finish reason - generation may have been interrupted");
+      }
+      
+      // Check if generation was successful
+      if (candidate.finishReason !== "STOP" && candidate.finishReason !== "MAX_TOKENS") {
+        throw new McpError(
+          ErrorCode.InternalError, 
+          `Generation failed with finish reason: ${candidate.finishReason}`
+        );
+      }
+      
       // Process response to extract image data
       const content: any[] = [];
       const savedFiles: string[] = [];
@@ -253,8 +271,8 @@ class NanoBananaMCP {
       // Create directory
       await fs.mkdir(imagesDir, { recursive: true, mode: 0o755 });
       
-      if (response.candidates && response.candidates[0]?.content?.parts) {
-        for (const part of response.candidates[0].content.parts) {
+      if (candidate?.content?.parts) {
+        for (const part of candidate.content.parts) {
           // Process text content
           if (part.text) {
             textContent += part.text;
@@ -291,11 +309,6 @@ class NanoBananaMCP {
       
       if (savedFiles.length > 0) {
         statusText += `\n\n📁 Image saved to:\n${savedFiles.map(f => `- ${f}`).join('\n')}`;
-        statusText += `\n\n💡 View the image by:`;
-        statusText += `\n1. Opening the file at the path above`;
-        statusText += `\n2. Clicking on "Called generate_image" in Cursor to expand the MCP call details`;
-        statusText += `\n\n🔄 To modify this image, use: continue_editing`;
-        statusText += `\n📋 To check current image info, use: get_last_image_info`;
       } else {
         statusText += `\n\nNote: No image was generated. The model may have returned only text.`;
         statusText += `\n\n💡 Tip: Try running the command again - sometimes the first call needs to warm up the model.`;
@@ -379,6 +392,24 @@ class NanoBananaMCP {
         ],
       });
       
+      // Validate response completeness
+      if (!response.candidates || response.candidates.length === 0) {
+        throw new McpError(ErrorCode.InternalError, "No candidates in response from Gemini API");
+      }
+      
+      const candidate = response.candidates[0];
+      if (!candidate.finishReason) {
+        throw new McpError(ErrorCode.InternalError, "Response missing finish reason - generation may have been interrupted");
+      }
+      
+      // Check if generation was successful
+      if (candidate.finishReason !== "STOP" && candidate.finishReason !== "MAX_TOKENS") {
+        throw new McpError(
+          ErrorCode.InternalError, 
+          `Generation failed with finish reason: ${candidate.finishReason}`
+        );
+      }
+      
       // Process response
       const content: any[] = [];
       const savedFiles: string[] = [];
@@ -389,8 +420,8 @@ class NanoBananaMCP {
       await fs.mkdir(imagesDir, { recursive: true, mode: 0o755 });
       
       // Extract image from response
-      if (response.candidates && response.candidates[0]?.content?.parts) {
-        for (const part of response.candidates[0].content.parts) {
+      if (candidate?.content?.parts) {
+        for (const part of candidate.content.parts) {
           if (part.text) {
             textContent += part.text;
           }
@@ -434,11 +465,6 @@ class NanoBananaMCP {
       
       if (savedFiles.length > 0) {
         statusText += `\n\n📁 Edited image saved to:\n${savedFiles.map(f => `- ${f}`).join('\n')}`;
-        statusText += `\n\n💡 View the edited image by:`;
-        statusText += `\n1. Opening the file at the path above`;
-        statusText += `\n2. Clicking on "Called edit_image" in Cursor to expand the MCP call details`;
-        statusText += `\n\n🔄 To continue editing, use: continue_editing`;
-        statusText += `\n📋 To check current image info, use: get_last_image_info`;
       } else {
         statusText += `\n\nNote: No edited image was generated.`;
         statusText += `\n\n💡 Tip: Try running the command again - sometimes the first call needs to warm up the model.`;
