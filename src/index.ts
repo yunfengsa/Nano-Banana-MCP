@@ -23,6 +23,7 @@ dotenvConfig();
 
 const ConfigSchema = z.object({
   geminiApiKey: z.string().min(1, "Gemini API key is required"),
+  baseUrl: z.string().url("Base URL must be a valid URL").optional(),
 });
 
 type Config = z.infer<typeof ConfigSchema>;
@@ -56,13 +57,17 @@ class NanoBananaMCP {
         tools: [
           {
             name: "configure_gemini_token",
-            description: "Configure your Gemini API token for nano-banana image generation",
+            description: "Configure your Gemini API token and optional base URL for nano-banana image generation",
             inputSchema: {
               type: "object",
               properties: {
                 apiKey: {
                   type: "string",
                   description: "Your Gemini API key from Google AI Studio",
+                },
+                baseUrl: {
+                  type: "string",
+                  description: "Optional custom base URL for the Gemini API (e.g., for custom endpoints or proxies)",
                 },
               },
               required: ["apiKey"],
@@ -184,28 +189,41 @@ class NanoBananaMCP {
   }
 
   private async configureGeminiToken(request: CallToolRequest): Promise<CallToolResult> {
-    const { apiKey } = request.params.arguments as { apiKey: string };
+    const { apiKey, baseUrl } = request.params.arguments as { apiKey: string; baseUrl?: string };
     
     try {
-      ConfigSchema.parse({ geminiApiKey: apiKey });
+      const configData: { geminiApiKey: string; baseUrl?: string } = { geminiApiKey: apiKey };
+      if (baseUrl) {
+        configData.baseUrl = baseUrl;
+      }
       
-      this.config = { geminiApiKey: apiKey };
-      this.genAI = new GoogleGenAI({ apiKey });
+      ConfigSchema.parse(configData);
+      
+      this.config = configData;
+      this.genAI = new GoogleGenAI({ 
+        apiKey,
+        ...(baseUrl && { httpOptions: { baseUrl } })
+      });
       this.configSource = 'config_file'; // Manual configuration via tool
       
       await this.saveConfig();
+      
+      let responseText = "✅ Gemini API token configured successfully! You can now use nano-banana image generation features.";
+      if (baseUrl) {
+        responseText += `\n🌐 Custom base URL configured: ${baseUrl}`;
+      }
       
       return {
         content: [
           {
             type: "text",
-            text: "✅ Gemini API token configured successfully! You can now use nano-banana image generation features.",
+            text: responseText,
           },
         ],
       };
     } catch (error) {
       if (error instanceof z.ZodError) {
-        throw new McpError(ErrorCode.InvalidParams, `Invalid API key: ${error.errors[0]?.message}`);
+        throw new McpError(ErrorCode.InvalidParams, `Invalid configuration: ${error.errors[0]?.message}`);
       }
       throw error;
     }
@@ -450,9 +468,18 @@ class NanoBananaMCP {
     if (isConfigured) {
       statusText = "✅ Gemini API token is configured and ready to use";
       
+      // Add base URL information if configured
+      if (this.config?.baseUrl) {
+        statusText += `\n🌐 Custom base URL: ${this.config.baseUrl}`;
+      }
+      
       switch (this.configSource) {
         case 'environment':
-          sourceInfo = "\n📍 Source: Environment variable (GEMINI_API_KEY)\n💡 This is the most secure configuration method.";
+          sourceInfo = "\n📍 Source: Environment variables (GEMINI_API_KEY";
+          if (process.env.GEMINI_BASE_URL) {
+            sourceInfo += " + GEMINI_BASE_URL";
+          }
+          sourceInfo += ")\n💡 This is the most secure configuration method.";
           break;
         case 'config_file':
           sourceInfo = "\n📍 Source: Local configuration file (.nano-banana-config.json)\n💡 Consider using environment variables for better security.";
@@ -464,11 +491,16 @@ class NanoBananaMCP {
 
 📝 Configuration options (in priority order):
 1. 🥇 MCP client environment variables (Recommended)
-2. 🥈 System environment variable: GEMINI_API_KEY  
+   - GEMINI_API_KEY (required)
+   - GEMINI_BASE_URL (optional, for custom endpoints)
+2. 🥈 System environment variables: GEMINI_API_KEY and GEMINI_BASE_URL
 3. 🥉 Use configure_gemini_token tool
 
 💡 For the most secure setup, add this to your MCP configuration:
-"env": { "GEMINI_API_KEY": "your-api-key-here" }`;
+"env": { 
+  "GEMINI_API_KEY": "your-api-key-here",
+  "GEMINI_BASE_URL": "https://custom-endpoint.example.com" 
+}`;
     }
     
     return {
@@ -602,16 +634,26 @@ class NanoBananaMCP {
   }
 
   private async loadConfig(): Promise<void> {
-    // Try to load from environment variable first
+    // Try to load from environment variables first
     const envApiKey = process.env.GEMINI_API_KEY;
+    const envBaseUrl = process.env.GEMINI_BASE_URL;
+    
     if (envApiKey) {
       try {
-        this.config = ConfigSchema.parse({ geminiApiKey: envApiKey });
-        this.genAI = new GoogleGenAI({ apiKey: this.config.geminiApiKey });
+        const configData: { geminiApiKey: string; baseUrl?: string } = { geminiApiKey: envApiKey };
+        if (envBaseUrl) {
+          configData.baseUrl = envBaseUrl;
+        }
+        
+        this.config = ConfigSchema.parse(configData);
+        this.genAI = new GoogleGenAI({ 
+          apiKey: this.config.geminiApiKey,
+          ...(this.config.baseUrl && { httpOptions: { baseUrl: this.config.baseUrl } })
+        });
         this.configSource = 'environment';
         return;
       } catch (error) {
-        // Invalid API key in environment
+        // Invalid configuration in environment
       }
     }
     
@@ -622,7 +664,10 @@ class NanoBananaMCP {
       const parsedConfig = JSON.parse(configData);
       
       this.config = ConfigSchema.parse(parsedConfig);
-      this.genAI = new GoogleGenAI({ apiKey: this.config.geminiApiKey });
+      this.genAI = new GoogleGenAI({ 
+        apiKey: this.config.geminiApiKey,
+        ...(this.config.baseUrl && { httpOptions: { baseUrl: this.config.baseUrl } })
+      });
       this.configSource = 'config_file';
     } catch {
       // Config file doesn't exist or is invalid, that's okay
