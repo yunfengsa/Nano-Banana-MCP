@@ -309,11 +309,6 @@ class NanoBananaMCP {
       
       if (savedFiles.length > 0) {
         statusText += `\n\n📁 Image saved to:\n${savedFiles.map(f => `- ${f}`).join('\n')}`;
-        statusText += `\n\n💡 View the image by:`;
-        statusText += `\n1. Opening the file at the path above`;
-        statusText += `\n2. Clicking on "Called generate_image" in Cursor to expand the MCP call details`;
-        statusText += `\n\n🔄 To modify this image, use: continue_editing`;
-        statusText += `\n📋 To check current image info, use: get_last_image_info`;
       } else {
         statusText += `\n\nNote: No image was generated. The model may have returned only text.`;
         statusText += `\n\n💡 Tip: Try running the command again - sometimes the first call needs to warm up the model.`;
